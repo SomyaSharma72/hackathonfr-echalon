@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Inbox Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%);
+            color: #1e3a8a;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+        }
+        .sidebar {
+            width: 80px;
+            background: #fff;
+            border-right: 1px solid #dbeafe;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 0;
+            box-shadow: 0 2px 8px rgba(67,97,238,0.04);
+        }
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #4361ee;
+            color: #fff;
+            font-weight: 700;
+            font-size: 22px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        .platform-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            cursor: pointer;
+            color: #4a5568;
+            background: #e0e7ff;
+            font-size: 24px;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+        .platform-icon.active {
+            background: #4361ee;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(67,97,238,0.12);
+        }
+        .platform-icon:hover {
+            background: #b3bcf7;
+            color: #4361ee;
+        }
+        .main {
+            flex: 1;
+            display: flex;
+            height: 100vh;
+        }
+        .conversations {
+            width: 320px;
+            background: #fff;
+            border-right: 1px solid #dbeafe;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 8px rgba(67,97,238,0.04);
+        }
+        .conv-header {
+            padding: 18px;
+            border-bottom: 1px solid #dbeafe;
+            font-weight: 700;
+            font-size: 18px;
+            background: #f8fafc;
+        }
+        .conv-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .conv-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            border-radius: 10px;
+            margin: 6px 8px;
+        }
+        .conv-item.active, .conv-item:hover {
+            background: #e0e7ff;
+            box-shadow: 0 2px 8px rgba(67,97,238,0.08);
+        }
+        .conv-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #dbeafe;
+            color: #4361ee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-right: 12px;
+        }
+        .conv-details {
+            flex: 1;
+        }
+        .conv-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .conv-meta {
+            font-size: 13px;
+            color: #4a5568;
+        }
+        .conv-unread {
+            background: #3b82f6;
+            color: #fff;
+            font-size: 12px;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+        }
+        .chat-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+        }
+        .chat-header {
+            padding: 18px 24px;
+            background: #fff;
+            border-bottom: 1px solid #dbeafe;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(67,97,238,0.04);
+        }
+        .chat-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #dbeafe;
+            color: #4361ee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-right: 12px;
+        }
+        .chat-title {
+            font-weight: 600;
+            font-size: 17px;
+        }
+        .chat-platform {
+            font-size: 13px;
+            color: #4a5568;
+            margin-left: 8px;
+        }
+        .messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+        }
+        .message {
+            max-width: 70%;
+            margin-bottom: 18px;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 15px;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(67,97,238,0.05);
+            word-break: break-word;
+        }
+        .message.sent {
+            background: linear-gradient(135deg, #4361ee 60%, #8a84ff 100%);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .message.received {
+            background: #fff;
+            color: #1e3a8a;
+            border: 1px solid #dbeafe;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .message-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-top: 5px;
+            opacity: 0.7;
+        }
+        .no-messages {
+            text-align: center;
+            color: #4a5568;
+            margin-top: 60px;
+            font-size: 1.1rem;
+        }
+        .chat-input-area {
+            background: #fff;
+            border-top: 1px solid #dbeafe;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+            box-shadow: 0 -2px 8px rgba(67,97,238,0.04);
+        }
+        .chat-input {
+            flex: 1;
+            border: 1px solid #dbeafe;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 15px;
+            outline: none;
+            background: #f8fafc;
+            transition: border 0.2s;
+        }
+        .chat-input:focus {
+            border-color: #4361ee;
+        }
+        .send-btn {
+            background: linear-gradient(135deg, #4361ee 60%, #8a84ff 100%);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            box-shadow: 0 2px 8px rgba(67,97,238,0.08);
+        }
+        .send-btn:hover {
+            background: linear-gradient(135deg, #5850d9 60%, #6c63ff 100%);
+        }
+        .loading {
+            text-align: center;
+            color: #4361ee;
+            margin-top: 40px;
+        }
+        #aiSuggestion {
+            margin: 0 24px 10px 24px;
+            color: #10b981;
+            font-size: 15px;
+            cursor: pointer;
+            display: none;
+            background: linear-gradient(90deg, #e0ffe0 0%, #f0fff0 100%);
+            border-radius: 10px;
+            padding: 12px 18px;
+            box-shadow: 0 2px 8px rgba(16,185,129,0.12);
+            transition: box-shadow 0.2s, background 0.2s, transform 0.2s;
+            position: relative;
+            font-weight: 600;
+            border-left: 4px solid #10b981;
+            animation: fadeInAI 0.7s cubic-bezier(.4,0,.2,1);
+        }
+        #aiSuggestion.ai-animate {
+            animation: fadeInAI 0.7s cubic-bezier(.4,0,.2,1);
+        }
+        #aiSuggestion:hover {
+            background: linear-gradient(90deg, #bbf7d0 0%, #e0ffe0 100%);
+            box-shadow: 0 4px 16px rgba(16,185,129,0.18);
+            transform: scale(1.03);
+        }
+        #aiSuggestion .ai-label {
+            font-size: 12px;
+            color: #059669;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            display: block;
+            text-transform: uppercase;
+        }
+        @keyframes fadeInAI {
+            from { opacity: 0; transform: translateY(20px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        @media (max-width: 900px) {
+            .conversations { width: 220px; }
+            .chat-header, .chat-input-area { padding: 12px 10px; }
+            .messages { padding: 10px; }
+        }
+        @media (max-width: 600px) {
+            .sidebar { width: 56px; }
+            .conversations { width: 100px; }
+            .conv-header { font-size: 15px; padding: 10px; }
+            .conv-item { padding: 8px 4px; font-size: 13px; }
+            .chat-header, .chat-input-area { padding: 8px 4px; }
+            .messages { padding: 4px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">U</div>
+        <div class="platform-icon telegram active" data-platform="telegram" title="Telegram">
+            <i class="fab fa-telegram"></i>
+        </div>
+        <div class="platform-icon instagram" data-platform="instagram" title="Instagram">
+            <i class="fab fa-instagram"></i>
+        </div>
+        <div class="platform-icon twitter" data-platform="twitter" title="Twitter">
+            <i class="fab fa-twitter"></i>
+        </div>
+    </div>
+    <div class="main">
+        <div class="conversations">
+            <div class="conv-header">Conversations</div>
+            <div class="conv-list" id="convList"></div>
+        </div>
+        <div class="chat-panel">
+            <div class="chat-header">
+                <div class="chat-avatar"><i class="fas fa-user"></i></div>
+                <div>
+                    <div class="chat-title" id="chatTitle">Select a conversation</div>
+                    <div class="chat-platform" id="chatPlatform"></div>
+                </div>
+            </div>
+            <div class="messages" id="messages"></div>
+            <div id="aiSuggestion" style="margin: 0 24px 10px 24px; color: #10b981; font-size: 15px; cursor: pointer; display: none;"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Type a message..." autocomplete="off">
+                <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    <script>
+        let currentPlatform = 'telegram';
+        let currentConversation = null;
+        let allConversations = [];
+        let lastMessageCount = 0;
+
+        function setPlatform(platform) {
+            currentPlatform = platform;
+            document.querySelectorAll('.platform-icon').forEach(el => {
+                el.classList.toggle('active', el.dataset.platform === platform);
+            });
+            renderConversations();
+            clearChat();
+        }
+
+        document.querySelectorAll('.platform-icon').forEach(el => {
+            el.addEventListener('click', () => setPlatform(el.dataset.platform));
+        });
+
+        function clearChat() {
+            document.getElementById('chatTitle').textContent = 'Select a conversation';
+            document.getElementById('chatPlatform').textContent = '';
+            document.getElementById('messages').innerHTML = '<div class="no-messages">No messages yet.<br>Select a conversation.</div>';
+            currentConversation = null;
+            hideAISuggestion();
+        }
+
+        function fetchAllConversations() {
+            const convList = document.getElementById('convList');
+            convList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+            fetch('/api/conversations')
+                .then(res => {
+                    if (res.status === 401) {
+                        window.location.href = '/';
+                        return [];
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    allConversations = data;
+                    renderConversations();
+                })
+                .catch(() => {
+                    convList.innerHTML = '<div class="no-messages">Failed to load conversations.</div>';
+                });
+        }
+
+        function renderConversations() {
+            const convList = document.getElementById('convList');
+            const conversations = allConversations.filter(c => c.platform === currentPlatform);
+            convList.innerHTML = '';
+            if (conversations.length === 0) {
+                convList.innerHTML = '<div class="no-messages">No conversations found.</div>';
+                return;
+            }
+            conversations.forEach((conv, idx) => {
+                const div = document.createElement('div');
+                div.className = 'conv-item' + (currentConversation && currentConversation.chat_id === conv.chat_id ? ' active' : '');
+                div.innerHTML = `
+                    <div class="conv-avatar"><i class="fas fa-user"></i></div>
+                    <div class="conv-details">
+                        <div class="conv-name">${conv.chat_name}</div>
+                        <div class="conv-meta">${new Date(conv.timestamp).toLocaleString()} • ${conv.msg_count} msgs</div>
+                    </div>
+                    ${conv.msg_count > 0 ? `<div class="conv-unread">${conv.msg_count}</div>` : ''}
+                `;
+                div.onclick = () => {
+                    document.querySelectorAll('.conv-item').forEach(i => i.classList.remove('active'));
+                    div.classList.add('active');
+                    currentConversation = conv;
+                    document.getElementById('chatTitle').textContent = conv.chat_name;
+                    document.getElementById('chatPlatform').textContent = currentPlatform.charAt(0).toUpperCase() + currentPlatform.slice(1);
+                    loadMessages(conv.chat_id);
+                };
+                convList.appendChild(div);
+            });
+        }
+
+        function loadMessages(chat_id) {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+            hideAISuggestion();
+            fetch(`/api/messages?platform=${currentPlatform}&chat_id=${chat_id}`)
+                .then(res => {
+                    if (res.status === 401) {
+                        window.location.href = '/';
+                        return [];
+                    }
+                    return res.json();
+                })
+                .then(msgs => {
+                    messagesDiv.innerHTML = '';
+                    if (!msgs || !msgs.length) {
+                        messagesDiv.innerHTML = '<div class="no-messages">No messages yet.<br>Start the conversation!</div>';
+                        lastMessageCount = 0;
+                        return;
+                    }
+                    msgs.forEach(msg => {
+                        const div = document.createElement('div');
+                        div.className = 'message ' + (msg.direction === 'sent' ? 'sent' : 'received');
+                        const timestamp = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        div.innerHTML = `
+                            <div>${msg.message}</div>
+                            <div class="message-info">
+                                <span>${msg.direction === 'sent' ? 'You' : msg.sender}</span>
+                                <span>${timestamp}</span>
+                            </div>
+                        `;
+                        messagesDiv.appendChild(div);
+                    });
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                    // --- AI suggestion logic ---
+                    // Only show suggestion for last received message
+                    const lastMsg = msgs[msgs.length - 1];
+                    if (lastMsg && lastMsg.direction === 'received') {
+                        fetchAISuggestion(currentPlatform, chat_id);
+                    } else {
+                        hideAISuggestion();
+                    }
+                    lastMessageCount = msgs.length;
+                })
+                .catch(() => {
+                    messagesDiv.innerHTML = '<div class="no-messages">Failed to load messages.</div>';
+                });
+        }
+
+        function fetchAISuggestion(platform, chat_id) {
+            fetch('/api/suggest_reply', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    platform: platform,
+                    chat_id: chat_id
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' && data.reply) {
+                    showAISuggestion(data.reply);
+                } else {
+                    hideAISuggestion();
+                }
+            })
+            .catch(() => {
+                hideAISuggestion();
+            });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text || !currentConversation) return;
+            const originalText = text;
+            input.value = '';
+            document.getElementById('sendBtn').disabled = true;
+            hideAISuggestion();
+
+            fetch('/api/send_message', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    platform: currentPlatform,
+                    message: originalText,
+                    chat_id: currentConversation.chat_id,
+                    chat_name: currentConversation.chat_name
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('sendBtn').disabled = false;
+                if (data.status === 'success') {
+                    loadMessages(currentConversation.chat_id);
+                    fetchAllConversations(); // Refresh counts/timestamps
+                } else {
+                    alert('Failed to send message: ' + (data.message || 'Unknown error'));
+                    input.value = originalText;
+                }
+            })
+            .catch(() => {
+                document.getElementById('sendBtn').disabled = false;
+                alert('Failed to send message.');
+                input.value = originalText;
+            });
+        }
+
+        function showAISuggestion(text) {
+            const aiDiv = document.getElementById('aiSuggestion');
+            aiDiv.innerHTML = `<span class="ai-label"><i class="fas fa-magic"></i> AI Suggested</span>${text || "Sorry, AI suggestion is currently unavailable."}`;
+            aiDiv.style.display = 'block';
+            aiDiv.classList.remove('ai-animate');
+            void aiDiv.offsetWidth; // trigger reflow for animation
+            aiDiv.classList.add('ai-animate');
+            aiDiv.onclick = function() {
+                document.getElementById('chatInput').value = text;
+                aiDiv.style.background = "#bbf7d0";
+                setTimeout(() => aiDiv.style.background = "", 400);
+            };
+        }
+
+        function hideAISuggestion() {
+            const aiDiv = document.getElementById('aiSuggestion');
+            aiDiv.textContent = '';
+            aiDiv.style.display = 'none';
+            aiDiv.classList.remove('ai-animate');
+            aiDiv.onclick = null;
+        }
+
+        document.getElementById('sendBtn').onclick = sendMessage;
+        document.getElementById('chatInput').onkeypress = function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        };
+        document.getElementById('chatInput').addEventListener('input', hideAISuggestion);
+
+        // Initial load
+        fetchAllConversations();
+        setInterval(fetchAllConversations, 10000);
+    </script>
+</body>
+</html>
